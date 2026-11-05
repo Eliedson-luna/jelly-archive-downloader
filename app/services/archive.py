@@ -130,7 +130,11 @@ def search(template: str, query: str, rows: int) -> list:
             "A URL de busca não devolveu JSON. Verifique o modo configurado."
         ) from exc
 
-    return [normalize_doc(doc) for doc in _extract_docs(payload) if doc.get("identifier")]
+    return [
+        normalize_doc(doc)
+        for doc in _extract_docs(payload)
+        if isinstance(doc, dict) and doc.get("identifier")
+    ]
 
 
 def _fetch_metadata_remote(identifier: str) -> dict:
@@ -202,8 +206,12 @@ def _fallback_torrent_url(identifier: str) -> tuple[str, str] | None:
 def resolve(identifier: str) -> dict:
     """Resolve um item para algo que o qBittorrent consiga baixar."""
     meta = get_metadata(identifier)
-    meta_md = meta.get("metadata") or {}
-    files = meta.get("files") or []
+    meta_md = meta.get("metadata")
+    if not isinstance(meta_md, dict):
+        meta_md = {}
+    files = meta.get("files")
+    if not isinstance(files, list):
+        files = []
 
     title = clean_text(meta_md.get("title"), limit=200) or identifier
     result = {
@@ -234,6 +242,8 @@ def resolve(identifier: str) -> dict:
         result["total_size"] = 0
 
     for entry in files:
+        if not isinstance(entry, dict):
+            continue
         name = str(entry.get("name") or "")
         if not name:
             continue

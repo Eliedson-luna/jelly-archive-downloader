@@ -19,10 +19,17 @@ def _int_env(name: str, default: int) -> int:
 
 
 class Config:
-    SECRET_KEY = os.environ.get("SECRET_KEY", "jelly-archive-downloader-local-only")
+    # Vazio significa: usar SECRET_KEY do ambiente ou gerar/persistir em DATA_DIR.
+    SECRET_KEY = os.environ.get("SECRET_KEY") or ""
 
     DATA_DIR = Path(os.environ.get("DATA_DIR", BASE_DIR / "data"))
     DB_PATH = Path(os.environ.get("DB_PATH", DATA_DIR / "app.db"))
+
+    # Proteção CSRF para todos os POSTs (desativada apenas em testes isolados).
+    CSRF_ENABLED = True
+
+    # Fuso usado para exibir datas do histórico (o banco continua em UTC).
+    TIMEZONE = os.environ.get("TZ", "UTC")
 
     # Tempo de vida do cache de metadados do archive.org (segundos).
     CACHE_TTL = _int_env("CACHE_TTL", 600)

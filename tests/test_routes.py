@@ -1,5 +1,5 @@
 from app import db
-from app.services import archive
+from app.services import archive, health
 
 
 def test_index_renders(client):
@@ -133,6 +133,125 @@ def test_history_api_returns_rows(client):
     response = client.get("/api/history")
     assert response.status_code == 200
     assert "<tr>" in response.get_data(as_text=True)
+
+
+def test_index_search_input_has_accessible_label(client):
+    body = client.get("/").get_data(as_text=True)
+    assert 'for="q"' in body
+    assert 'id="q"' in body
+
+
+def test_download_with_malformed_torrent_is_reported(app, client, monkeypatch):
+    with app.app_context():
+        db.set_setting("download_dir", "/downloads")
+        db.get_db().commit()
+
+    monkeypatch.setattr(
+        health,
+        "check",
+        lambda force=False: {"ok": True, "version": "v4.6.2", "error": None, "checked_at": ""},
+    )
+    monkeypatch.setattr(
+        archive,
+        "resolve",
+        lambda identifier: {
+            "identifier": identifier,
+            "title": "Filme",
+            "available": True,
+            "reason": "",
+            "torrent_name": "filme.torrent",
+            "torrent_url": "https://example.invalid/filme.torrent",
+            "torrent_size": 10,
+            "total_size": 10,
+            "files": [],
+        },
+    )
+    monkeypatch.setattr(archive, "fetch_torrent", lambda url: b"d4:infoiXee")
+
+    response = client.post("/item/filme/download", follow_redirects=True)
+    body = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert "inteiro inválido" in body
+
+
+def test_test_connection_uses_submitted_values(app, client, monkeypatch):
+    captured = {}
+
+    def fake_probe(settings):
+        captured.update(settings)
+        return {"ok": False, "version": None, "error": "offline", "checked_at": ""}
+
+    monkeypatch.setattr(health, "probe", fake_probe)
+    response = client.post(
+        "/api/test-connection",
+        data={
+            "qbittorrent_url": "http://novo-host:9090",
+            "qbittorrent_user": "novo",
+            "qbittorrent_password": "nova-senha",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.get_json()["ok"] is False
+    assert captured["qbittorrent_url"] == "http://novo-host:9090"
+    assert captured["qbittorrent_user"] == "novo"
+    assert captured["qbittorrent_password"] == "nova-senha"
+
+
+def test_test_connection_requires_password_when_url_changes(app, client, monkeypatch):
+    with app.app_context():
+        db.set_setting("qbittorrent_url", "http://host-salvo:8080")
+        db.set_setting("qbittorrent_user", "admin")
+        db.set_setting("qbittorrent_password", "senha-antiga")
+        db.get_db().commit()
+
+    called = {"probe": False}
+
+    def fake_probe(settings):
+        called["probe"] = True
+        return {"ok": True, "version": "v4.6.2", "error": None, "checked_at": ""}
+
+    monkeypatch.setattr(health, "probe", fake_probe)
+    response = client.post(
+        "/api/test-connection",
+        data={
+            "qbittorrent_url": "http://novo-host:9090",
+            "qbittorrent_user": "admin",
+            "qbittorrent_password": "",
+        },
+    )
+
+    payload = response.get_json()
+    assert payload["ok"] is False
+    assert "senha" in payload["error"].lower()
+    assert called["probe"] is False
+
+
+def test_test_connection_reuses_saved_password_for_same_url(app, client, monkeypatch):
+    with app.app_context():
+        db.set_setting("qbittorrent_url", "http://host-salvo:8080")
+        db.set_setting("qbittorrent_user", "admin")
+        db.set_setting("qbittorrent_password", "senha-antiga")
+        db.get_db().commit()
+
+    captured = {}
+
+    def fake_probe(settings):
+        captured.update(settings)
+        return {"ok": True, "version": "v4.6.2", "error": None, "checked_at": ""}
+
+    monkeypatch.setattr(health, "probe", fake_probe)
+    response = client.post(
+        "/api/test-connection",
+        data={
+            "qbittorrent_url": "http://host-salvo:8080",
+            "qbittorrent_user": "admin",
+            "qbittorrent_password": "",
+        },
+    )
+
+    assert response.get_json()["ok"] is True
+    assert captured["qbittorrent_password"] == "senha-antiga"
 
 
 def test_torrent_check_endpoint(client, monkeypatch):

@@ -102,6 +102,41 @@ def test_torrents_info_returns_list():
     assert client.torrents_info() == payload
 
 
+def test_info_by_hash_filters_with_requested_hashes():
+    client = make_client("v4.6.2")
+    seen = {}
+    payload = [
+        {"hash": "ABC", "state": "downloading"},
+        "entrada inválida",
+        {"hash": "def", "state": "pausedDL"},
+    ]
+
+    def handler(method, url, kwargs):
+        seen.update(kwargs)
+        return FakeResponse(payload=payload)
+
+    client.session = FakeSession(handler)
+    info = client.info_by_hash(["abc", "def"])
+
+    assert seen["params"] == {"hashes": "abc|def"}
+    assert set(info) == {"abc", "def"}
+    assert info["abc"]["state"] == "downloading"
+
+
+def test_info_by_hash_without_hashes_requests_all():
+    client = make_client("v4.6.2")
+    seen = {}
+    payload = [{"hash": "abc"}]
+
+    def handler(method, url, kwargs):
+        seen.update(kwargs)
+        return FakeResponse(payload=payload)
+
+    client.session = FakeSession(handler)
+    assert client.info_by_hash() == {"abc": {"hash": "abc"}}
+    assert seen["params"] == {}
+
+
 def test_map_status():
     assert map_status({"progress": 1.0, "state": "uploading"})[0] == "completed"
     assert map_status({"progress": 0.2, "state": "downloading"})[0] == "downloading"

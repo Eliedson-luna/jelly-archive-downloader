@@ -128,3 +128,44 @@ def test_resolve_without_torrent(monkeypatch):
     item = archive.resolve("filme")
     assert item["available"] is False
     assert "torrent" in item["reason"].lower()
+
+
+def test_search_ignores_non_dict_docs(app, monkeypatch):
+    class Response:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return {
+                "response": {
+                    "docs": [
+                        "não é um documento",
+                        {"identifier": "ok", "title": "Válido"},
+                        {"title": "sem identifier"},
+                    ]
+                }
+            }
+
+    monkeypatch.setattr(archive.requests, "get", lambda *a, **k: Response())
+    with app.app_context():
+        results = archive.search("https://x/?q={query}", "abc", 10)
+    assert [item["identifier"] for item in results] == ["ok"]
+
+
+def test_resolve_handles_malformed_metadata(monkeypatch):
+    meta = {"metadata": "não é dict", "files": ["não é dict", {"name": "Filme.mp4"}]}
+    monkeypatch.setattr(archive, "get_metadata", lambda identifier: meta)
+    monkeypatch.setattr(archive, "_fallback_torrent_url", lambda identifier: None)
+    item = archive.resolve("filme")
+    assert item["title"] == "filme"
+    assert item["available"] is False
+    assert [entry["name"] for entry in item["files"]] == ["Filme.mp4"]
+
+
+def test_resolve_handles_files_not_a_list(monkeypatch):
+    meta = _fake_meta(files="formato inesperado")
+    monkeypatch.setattr(archive, "get_metadata", lambda identifier: meta)
+    monkeypatch.setattr(archive, "_fallback_torrent_url", lambda identifier: None)
+    item = archive.resolve("filme")
+    assert item["files"] == []
+    assert item["available"] is False

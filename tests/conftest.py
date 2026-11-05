@@ -14,7 +14,7 @@ OFFLINE = {"ok": False, "version": None, "error": "offline (teste)", "checked_at
 ONLINE = {"ok": True, "version": "v4.6.2", "error": None, "checked_at": ""}
 
 
-def _test_config(tmp_path):
+def _test_config(tmp_path, csrf_enabled=False):
     class TestConfig(Config):
         TESTING = True
         DB_PATH = tmp_path / "test.db"
@@ -22,6 +22,7 @@ def _test_config(tmp_path):
         CACHE_TTL = 0
         HEALTH_TTL = 0
         SECRET_KEY = "test"
+        CSRF_ENABLED = csrf_enabled
 
     return TestConfig
 
@@ -47,8 +48,22 @@ def real_app(tmp_path):
 
 
 @pytest.fixture
+def csrf_app(tmp_path, monkeypatch):
+    """App com CSRF ativo, mas sem chamadas reais ao qBittorrent."""
+    application = create_app(_test_config(tmp_path, csrf_enabled=True))
+    monkeypatch.setattr(health, "check", lambda force=False: dict(OFFLINE))
+    monkeypatch.setattr(health, "probe", lambda settings: dict(OFFLINE))
+    return application
+
+
+@pytest.fixture
 def client(app):
     return app.test_client()
+
+
+@pytest.fixture
+def csrf_client(csrf_app):
+    return csrf_app.test_client()
 
 
 @pytest.fixture

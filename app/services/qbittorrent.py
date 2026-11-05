@@ -149,8 +149,9 @@ class QBittorrentClient:
             raise QbtError("Resposta inesperada do qBittorrent.") from exc
         return payload if isinstance(payload, list) else []
 
-    def info_by_hash(self) -> dict:
-        return {item.get("hash", "").lower(): item for item in self.torrents_info()}
+    def info_by_hash(self, hashes: list[str] | None = None) -> dict:
+        items = self.torrents_info(hashes)
+        return {item.get("hash", "").lower(): item for item in items if isinstance(item, dict)}
 
     def delete(self, hashes: list[str], delete_files: bool = False) -> None:
         if not hashes:

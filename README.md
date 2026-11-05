@@ -140,7 +140,8 @@ um alerta vermelho aparece em todas as páginas e o download fica bloqueado.
 | Variável | Padrão | Função |
 |---|---|---|
 | `PORT` | `8088` | porta da interface |
-| `TZ` | `America/Sao_Paulo` | fuso horário |
+| `TZ` | `America/Sao_Paulo` | fuso horário (logs e datas do histórico) |
+| `SECRET_KEY` | gerado em `DATA_DIR_HOST/secret_key` | segredo das sessões e do token CSRF |
 | `DATA_DIR_HOST` | `./data` | pasta do **host** montada em `/data` |
 | `PUID` / `PGID` | `1000` | dono da pasta `DATA_DIR_HOST` |
 | `QBT_URL` | — | Web UI do qBittorrent (vazio = usa a interface) |
@@ -153,6 +154,8 @@ um alerta vermelho aparece em todas as páginas e o download fica bloqueado.
 
 Variáveis **vazias** são ignoradas (a interface manda). Variáveis preenchidas
 sobrescrevem o banco a cada boot e travam o campo correspondente na tela.
+`SECRET_KEY` é a exceção: se ficar vazia, o app gera uma chave aleatória e a
+persiste em `DATA_DIR_HOST/secret_key`.
 
 ## Guia: baixar do Internet Archive
 
@@ -213,6 +216,7 @@ resolver sozinho assim que o web seed responde.
 | Dado | Onde fica | Persistente |
 |---|---|---|
 | Configurações, histórico e cache de metadados | `DATA_DIR_HOST/app.db` (SQLite), no host | sim |
+| Segredo das sessões/CSRF | `DATA_DIR_HOST/secret_key` (gerado no primeiro boot) | sim |
 | Arquivos `.torrent` | em memória, apenas durante o envio ao qBittorrent | não |
 | Filmes baixados | diretório de downloads do **host**, escritos pelo qBittorrent | sim (fora do container) |
 | Cópia do `.torrent` gerida pelo qBittorrent | perfil do qBittorrent no host (`BT_backup/`) | sim (do qBittorrent) |

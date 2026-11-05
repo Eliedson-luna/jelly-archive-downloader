@@ -93,7 +93,36 @@ def save():
     return redirect(url_for("settings.edit"))
 
 
+def _submitted_connection_settings() -> tuple[dict | None, str | None]:
+    """Monta uma configuração de teste a partir do formulário, sem salvar.
+
+    Senha vazia usa a senha salva apenas quando a URL não mudou. Isso evita
+    enviar a credencial antiga para um host novo.
+    """
+    saved = db.get_settings()
+    submitted = {
+        key: (request.form.get(key) or "").strip()
+        for key in ("qbittorrent_url", "qbittorrent_user", "qbittorrent_password")
+    }
+    url = submitted["qbittorrent_url"] or saved.get("qbittorrent_url", "")
+    user = submitted["qbittorrent_user"] or saved.get("qbittorrent_user", "")
+    password = submitted["qbittorrent_password"]
+
+    if not password:
+        if url.rstrip("/") != (saved.get("qbittorrent_url") or "").rstrip("/"):
+            return None, "Informe a senha para testar uma URL diferente da salva."
+        password = saved.get("qbittorrent_password", "")
+
+    return {
+        "qbittorrent_url": url,
+        "qbittorrent_user": user,
+        "qbittorrent_password": password,
+    }, None
+
+
 @bp.post("/api/test-connection")
 def test_connection():
-    status = health.check(force=True)
-    return jsonify(status)
+    settings, error = _submitted_connection_settings()
+    if error:
+        return jsonify({"ok": False, "version": None, "error": error, "checked_at": ""})
+    return jsonify(health.probe(settings))

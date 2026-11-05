@@ -14,7 +14,7 @@ def _sync(rows: list) -> list:
         return rows
 
     try:
-        info = health.client().info_by_hash()
+        info = health.client().info_by_hash(hashes)
     except QbtError:
         for row in rows:
             row["live"] = False

@@ -1,6 +1,9 @@
 (function () {
   "use strict";
 
+  var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+  var csrfToken = csrfMeta ? csrfMeta.getAttribute("content") : "";
+
   function formatSize(bytes) {
     var value = Number(bytes);
     if (!isFinite(value) || value <= 0) return "";
@@ -69,7 +72,12 @@
       var output = document.getElementById("test-result");
       output.className = "test-result muted";
       output.textContent = "Testando…";
-      fetch(testButton.dataset.url, { method: "POST" })
+      var form = testButton.closest("form");
+      fetch(testButton.dataset.url, {
+        method: "POST",
+        headers: { "X-CSRF-Token": csrfToken },
+        body: form ? new FormData(form) : undefined
+      })
         .then(function (response) { return response.json(); })
         .then(function (data) {
           if (data.ok) {
