@@ -1,11 +1,11 @@
 services:
-  jelly-downloader:
+  jelly-archive-downloader:
     build:
       context: .
       # Em uma máquina x86 gerando imagem para o servidor arm32, descomente:
       # platform: linux/arm/v7
-    image: jelly-downloader:latest
-    container_name: jelly-downloader
+    image: jelly-archive-downloader:latest
+    container_name: jelly-archive-downloader
     # Necessário para alcançar o qBittorrent que roda no host (127.0.0.1:8080).
     network_mode: host
     environment:

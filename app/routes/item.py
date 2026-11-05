@@ -72,7 +72,7 @@ def download(identifier: str):
             savepath=settings.get("download_dir", ""),
             category=settings.get("category", ""),
             paused=settings.get("add_paused") == "1",
-            tags="jelly-downloader",
+            tags="jelly-archive-downloader",
         )
 
         db.add_download(

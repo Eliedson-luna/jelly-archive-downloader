@@ -28,7 +28,7 @@ class QBittorrentClient:
             {
                 "Referer": self.base_url,
                 "Origin": self.base_url,
-                "User-Agent": "JellyDownloader/1.0",
+                "User-Agent": "JellyArchiveDownloader/1.0",
             }
         )
         self._logged_in = False

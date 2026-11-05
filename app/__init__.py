@@ -85,7 +85,7 @@ def create_app(config_object=Config) -> Flask:
         if request.endpoint not in {"health", "static"}:
             status = health.check()
         return {
-            "app_name": "Jelly Downloader",
+            "app_name": "Jelly Archive Downloader",
             "qbt": status,
             "status_labels": STATUS_LABELS,
         }

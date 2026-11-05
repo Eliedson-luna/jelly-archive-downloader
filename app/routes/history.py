@@ -118,7 +118,7 @@ def retry(download_id: int):
             savepath=row.get("savepath") or settings.get("download_dir", ""),
             category=row.get("category") or settings.get("category", ""),
             paused=settings.get("add_paused") == "1",
-            tags="jelly-downloader",
+            tags="jelly-archive-downloader",
         )
     except (archive.ArchiveError, QbtError, torrent.BencodeError) as exc:
         db.update_download(download_id, status="error", last_error=str(exc))
