@@ -10,7 +10,7 @@
 [![qBittorrent](https://img.shields.io/badge/qBittorrent-Web%20API-2F67B2?style=flat-square&logo=qbittorrent&logoColor=white)](https://www.qbittorrent.org/)
 [![Fonte](https://img.shields.io/badge/fonte-somente%20archive.org-1B1B1B?style=flat-square&logo=internetarchive&logoColor=white)](https://archive.org/)
 [![Testes](https://img.shields.io/badge/testes-41%20passando-2ea043?style=flat-square)](#-desenvolvimento)
-[![Pegada](https://img.shields.io/badge/pegada-leve%20~100%20MB-4f8cff?style=flat-square)](#-hardware-alvo)
+[![Pegada](https://img.shields.io/badge/pegada-leve%20~100%20MB-4f8cff?style=flat-square)](#hardware-alvo)
 
 </div>
 
@@ -27,7 +27,7 @@
 - [Escopo: somente Internet Archive](#-escopo-somente-internet-archive)
 - [Como funciona](#-como-funciona)
 - [Instalação rápida](#-instalação-rápida)
-- [Configuração](#️-configuração)
+- [Configuração](#-configuração)
 - [Guia: baixar do Internet Archive](#-guia-baixar-do-internet-archive)
 - [Onde ficam os dados](#-onde-ficam-os-dados)
 - [Desenvolvimento](#-desenvolvimento)
