@@ -20,6 +20,7 @@
 <h1>Configurações</h1>
 
 <form method="post" action="{{ url_for('settings.save') }}" class="settings-form">
+  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
   <fieldset class="panel">
     <legend>qBittorrent (roda no host, fora do container)</legend>

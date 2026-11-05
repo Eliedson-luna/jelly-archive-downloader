@@ -22,7 +22,10 @@ def _decode(data: bytes, pos: int = 0):
         end = data.find(b"e", pos)
         if end < 0:
             raise BencodeError("inteiro sem terminador")
-        return int(data[pos + 1 : end]), end + 1
+        try:
+            return int(data[pos + 1 : end]), end + 1
+        except ValueError as exc:
+            raise BencodeError("inteiro inválido") from exc
 
     if ch == b"l":
         pos += 1
@@ -47,7 +50,10 @@ def _decode(data: bytes, pos: int = 0):
         sep = data.find(b":", pos)
         if sep < 0:
             raise BencodeError("string sem separador de tamanho")
-        length = int(data[pos:sep])
+        try:
+            length = int(data[pos:sep])
+        except ValueError as exc:
+            raise BencodeError("tamanho de string inválido") from exc
         start = sep + 1
         end = start + length
         if end > len(data):

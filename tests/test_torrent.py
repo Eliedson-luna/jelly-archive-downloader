@@ -48,3 +48,17 @@ def test_bdecode_rejects_invalid_data():
         torrent.bdecode(b"d4:info")
     with pytest.raises(torrent.BencodeError):
         torrent.infohash(b"i3e")
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        b"d4:infoiXee",  # inteiro sem dígitos
+        b"d4:infoi1xee",  # inteiro com lixo
+        b"d4:info1x:ae",  # tamanho de string não numérico
+        b"d4:info999999999999999999999:ae",  # tamanho gigante
+    ],
+)
+def test_bdecode_converts_invalid_numbers_to_bencodeerror(data):
+    with pytest.raises(torrent.BencodeError):
+        torrent.infohash(data)

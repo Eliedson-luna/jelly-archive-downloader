@@ -17,6 +17,7 @@ class StubQbt:
         self.torrents = []
         self.added = []
         self.deleted = []
+        self.info_queries = []
         handler = self._handler()
         self.server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
         self.port = self.server.server_address[1]
@@ -81,6 +82,7 @@ class StubQbt:
                 if self.path.endswith("/app/version"):
                     return self._send(b"v4.6.2")
                 if "/torrents/info" in self.path:
+                    stub.info_queries.append(self.path)
                     payload = json.dumps(stub.torrents)
                     return self._send(payload, ctype="application/json")
                 return self._send(b"Ok.")
@@ -199,6 +201,28 @@ def test_history_marks_missing_when_not_in_qbt(configured_app, monkeypatch):
 
     with configured_app.app_context():
         assert db.list_downloads()[0]["status"] == "missing"
+
+
+def test_history_requests_only_tracked_hashes(configured_app, stub_qbt):
+    tracked = "c" * 40
+    with configured_app.app_context():
+        db.add_download(
+            identifier="filme",
+            title="Filme",
+            torrent_url="https://example.invalid/x.torrent",
+            info_hash=tracked,
+            category="jelly",
+            savepath="/tmp",
+        )
+
+    client = configured_app.test_client()
+    response = client.get("/api/history")
+    assert response.status_code == 200
+
+    assert stub_qbt.info_queries, "o histórico deveria consultar o qBittorrent"
+    query = stub_qbt.info_queries[-1]
+    assert "hashes=" in query
+    assert tracked in query
 
 
 def test_health_detects_stub(configured_app, stub_qbt):

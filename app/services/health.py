@@ -23,6 +23,23 @@ def _empty(error: str = "") -> dict:
     }
 
 
+def probe(settings: dict) -> dict:
+    """Testa uma configuração sem alterar o cache global."""
+    client = client_from_settings(settings)
+    try:
+        version = client.version()
+        return {
+            "ok": True,
+            "version": version,
+            "error": None,
+            "checked_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        }
+    except QbtError as exc:
+        return _empty(str(exc))
+    except Exception as exc:  # nunca derrubar a página por causa do health
+        return _empty(f"Erro inesperado ao falar com o qBittorrent: {exc}")
+
+
 def check(force: bool = False) -> dict:
     from flask import current_app
 
@@ -31,21 +48,7 @@ def check(force: bool = False) -> dict:
     if not force and _cache["status"] and (now - _cache["at"]) < ttl:
         return _cache["status"]
 
-    settings = db.get_settings()
-    client = client_from_settings(settings)
-    try:
-        version = client.version()
-        status = {
-            "ok": True,
-            "version": version,
-            "error": None,
-            "checked_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        }
-    except QbtError as exc:
-        status = _empty(str(exc))
-    except Exception as exc:  # nunca derrubar a página por causa do health
-        status = _empty(f"Erro inesperado ao falar com o qBittorrent: {exc}")
-
+    status = probe(db.get_settings())
     _cache["at"] = now
     _cache["status"] = status
     return status

@@ -6,7 +6,8 @@
 <section class="hero">
   <h1>Encontre um filme no archive.org</h1>
   <form class="search-form" action="{{ url_for('search.search') }}" method="get">
-    <input type="search" name="q" value="{{ query }}" placeholder="Ex.: Night of the Living Dead"
+    <label for="q" class="sr-only">Buscar no Internet Archive</label>
+    <input id="q" type="search" name="q" value="{{ query }}" placeholder="Ex.: Night of the Living Dead"
            autofocus autocomplete="off" required>
     <button type="submit" class="btn btn-primary">Buscar</button>
   </form>
