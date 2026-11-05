@@ -9,7 +9,7 @@
 [![Docker](https://img.shields.io/badge/Docker-linux%2Farm%2Fv7-2496ED?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
 [![qBittorrent](https://img.shields.io/badge/qBittorrent-Web%20API-2F67B2?style=flat-square&logo=qbittorrent&logoColor=white)](https://www.qbittorrent.org/)
 [![Fonte](https://img.shields.io/badge/fonte-somente%20archive.org-1B1B1B?style=flat-square&logo=internetarchive&logoColor=white)](https://archive.org/)
-[![Testes](https://img.shields.io/badge/testes-41%20passando-2ea043?style=flat-square)](#-desenvolvimento)
+[![Testes](https://img.shields.io/badge/testes-41%20passando-2ea043?style=flat-square)](#desenvolvimento)
 [![Pegada](https://img.shields.io/badge/pegada-leve%20~100%20MB-4f8cff?style=flat-square)](#hardware-alvo)
 
 </div>
@@ -17,35 +17,35 @@
 > [!IMPORTANT]
 > **Este projeto baixa somente do [Internet Archive](https://archive.org).**
 > A busca e a resolução do `.torrent` são específicas do archive.org — não é um
-> buscador genérico de torrents. Veja o [guia completo](#-guia-baixar-do-internet-archive).
+> buscador genérico de torrents. Veja o [guia completo](#guia-baixar-do-internet-archive).
 
 ---
 
-## 📚 Sumário
+## Sumário
 
-- [O que ele faz](#-o-que-ele-faz)
-- [Escopo: somente Internet Archive](#-escopo-somente-internet-archive)
-- [Como funciona](#-como-funciona)
-- [Instalação rápida](#-instalação-rápida)
-- [Configuração](#-configuração)
-- [Guia: baixar do Internet Archive](#-guia-baixar-do-internet-archive)
-- [Onde ficam os dados](#-onde-ficam-os-dados)
-- [Desenvolvimento](#-desenvolvimento)
-- [Solução de problemas](#-solução-de-problemas)
-- [Limitações](#-limitações)
+- [O que ele faz](#o-que-ele-faz)
+- [Escopo: somente Internet Archive](#escopo-somente-internet-archive)
+- [Como funciona](#como-funciona)
+- [Instalação rápida](#instalação-rápida)
+- [Configuração](#configuração)
+- [Guia: baixar do Internet Archive](#guia-baixar-do-internet-archive)
+- [Onde ficam os dados](#onde-ficam-os-dados)
+- [Desenvolvimento](#desenvolvimento)
+- [Solução de problemas](#solução-de-problemas)
+- [Limitações](#limitações)
 
-## ✨ O que ele faz
+## O que ele faz
 
-- 🔎 **Busca** filmes no acervo público do archive.org e mostra o que tem torrent.
-- 🧲 **Envia o `.torrent`** direto para o qBittorrent do host (Web API), já com
+- **Busca** filmes no acervo público do archive.org e mostra o que tem torrent.
+- **Envia o `.torrent`** direto para o qBittorrent do host (Web API), já com
   categoria, `savepath` e tag.
-- 📊 **Acompanha o progresso** em um histórico que se atualiza sozinho.
-- ⚙️ **Configura tudo pela interface**: credenciais do qBittorrent, diretório de
+- **Acompanha o progresso** em um histórico que se atualiza sozinho.
+- **Configura tudo pela interface**: credenciais do qBittorrent, diretório de
   downloads e URL de busca.
-- 🚨 **Avisa se o qBittorrent não estiver acessível** — banner em todas as páginas
+- **Avisa se o qBittorrent não estiver acessível** — banner em todas as páginas
   e download bloqueado.
 
-## 🔒 Escopo: somente Internet Archive
+## Escopo: somente Internet Archive
 
 | Dentro do escopo | Fora do escopo |
 |---|---|
@@ -59,7 +59,7 @@ O que garante esse escopo é o **resolvedor de torrent**: ele consulta
 `Archive BitTorrent` (ou a listagem de `/download/<identifier>/`). Nenhuma outra
 fonte é consultada.
 
-## 🧭 Como funciona
+## Como funciona
 
 ```
 navegador ──> Flask (container) ──HTTP──> qBittorrent do host (Web API)
@@ -80,7 +80,7 @@ navegador ──> Flask (container) ──HTTP──> qBittorrent do host (Web A
 4. **Histórico** — status e progresso são reconciliados com
    `torrents/info?hashes=...` a cada 5 segundos.
 
-## 🚀 Instalação rápida
+## Instalação rápida
 
 ```bash
 git clone https://github.com/Eliedson-luna/jelly-archive-downloader.git
@@ -111,7 +111,7 @@ Acesse **http://IP-DO-SERVIDOR:8088**.
 3. Se o container não autenticar, marque temporariamente
    *"Bypass authentication for clients on localhost"* para testar.
 
-## ⚙️ Configuração
+## Configuração
 
 Tudo em **Configurações** na interface:
 
@@ -154,7 +154,7 @@ um alerta vermelho aparece em todas as páginas e o download fica bloqueado.
 Variáveis **vazias** são ignoradas (a interface manda). Variáveis preenchidas
 sobrescrevem o banco a cada boot e travam o campo correspondente na tela.
 
-## 📥 Guia: baixar do Internet Archive
+## Guia: baixar do Internet Archive
 
 ### 1. O que é o Internet Archive
 
@@ -205,10 +205,10 @@ resolver sozinho assim que o web seed responde.
 - Não aumente o timeout nem dispare buscas em loop: é um serviço público.
 - Use para **uso pessoal**, respeitando direitos autorais e os
   [termos do archive.org](https://archive.org/about/terms.php).
-- ⚠️ Este projeto não contorna restrições: itens indisponíveis continuam
+- Este projeto não contorna restrições: itens indisponíveis continuam
   indisponíveis.
 
-## 🗂️ Onde ficam os dados
+## Onde ficam os dados
 
 | Dado | Onde fica | Persistente |
 |---|---|---|
@@ -245,7 +245,7 @@ Alternativa sem parar o container (SQLite em modo WAL):
 sqlite3 data/app.db ".backup 'data/app.db.bak'"
 ```
 
-## 🧪 Desenvolvimento
+## Desenvolvimento
 
 ```bash
 python3 -m venv .venv
@@ -290,7 +290,7 @@ logs/                    # registro de sessões (ver AGENTS.md)
 | `/settings` | configurações |
 | `/health` | healthcheck do container |
 
-## 🩺 Solução de problemas
+## Solução de problemas
 
 | Sintoma | Causa provável |
 |---|---|
@@ -302,7 +302,7 @@ logs/                    # registro de sessões (ver AGENTS.md)
 | Busca sem resultados | a URL de busca precisa conter `{query}` e devolver JSON |
 | Selo “sem torrent” em tudo | item/coleção sem `.torrent`; teste outro identifier |
 
-## 📌 Limitações
+## Limitações
 
 - **Somente Internet Archive** — por design.
 - Sem autenticação: use apenas em rede local/confiável.
