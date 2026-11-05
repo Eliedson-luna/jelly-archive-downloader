@@ -1,0 +1,39 @@
+{% for row in rows %}
+  <tr>
+    <td>
+      <a href="{{ url_for('item.detail', identifier=row.identifier) }}">{{ row.title }}</a>
+      <div class="muted small mono">{{ row.identifier }}</div>
+      {% if row.last_error %}<div class="small error-text">{{ row.last_error }}</div>{% endif %}
+    </td>
+    <td>
+      <span class="badge status-{{ row.status }}">{{ status_labels.get(row.status, row.status) }}</span>
+      {% if row.live and row.dlspeed %}
+        <div class="muted small">{{ (row.dlspeed / 1024)|round(0)|int }} KB/s{% if row.eta %} · {{ row.eta|human_eta }}{% endif %}</div>
+      {% endif %}
+    </td>
+    <td class="progress-col">
+      <div class="progress"><span style="width: {{ row.progress or 0 }}%"></span></div>
+      <div class="muted small">{{ "%.1f"|format(row.progress or 0) }}%</div>
+    </td>
+    <td class="num">{{ (row.total_size or row.size)|human_size }}</td>
+    <td class="small">{{ row.added_at|human_date }}</td>
+    <td class="actions-col">
+      {% if row.status == "removed" or row.status == "error" or row.status == "missing" %}
+        <form method="post" action="{{ url_for('history.retry', download_id=row.id) }}">
+          <button type="submit" class="btn btn-small">Reenviar</button>
+        </form>
+      {% else %}
+        <form method="post" action="{{ url_for('history.remove', download_id=row.id) }}"
+              data-confirm="Remover este torrent do qBittorrent? Os arquivos baixados serão mantidos.">
+          <button type="submit" class="btn btn-small btn-danger">Remover</button>
+        </form>
+      {% endif %}
+    </td>
+  </tr>
+{% else %}
+  <tr>
+    <td colspan="6" class="muted">
+      Nenhum download ainda. <a href="{{ url_for('search.index') }}">Busque um filme</a> para começar.
+    </td>
+  </tr>
+{% endfor %}

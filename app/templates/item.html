@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.title if item else identifier }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+{% if error %}
+  <div class="alert alert-error">{{ error }}</div>
+  <a class="btn" href="{{ url_for('search.index') }}">Voltar à busca</a>
+{% elif item %}
+  <div class="item-header">
+    <div>
+      <h1>{{ item.title }}</h1>
+      <p class="muted small">
+        {{ item.identifier }}
+        {% if item.year %} · {{ item.year }}{% endif %}
+        {% if item.creator %} · {{ item.creator }}{% endif %}
+        {% if item.mediatype %} · {{ item.mediatype }}{% endif %}
+      </p>
+    </div>
+    <a class="btn btn-small" href="{{ item.details_url }}" target="_blank" rel="noopener">Ver no archive.org ↗</a>
+  </div>
+
+  {% if item.description %}
+    <p class="description">{{ item.description }}</p>
+  {% endif %}
+
+  <section class="panel">
+    <h2>Torrent</h2>
+    {% if item.available %}
+      <p>
+        <span class="badge badge-ok">disponível</span>
+        <strong>{{ item.torrent_name }}</strong>
+        <span class="muted">({{ item.torrent_size|human_size }} · conteúdo {{ item.total_size|human_size }})</span>
+      </p>
+      {% if item.tracker %}<p class="muted small">Tracker: {{ item.tracker }}</p>{% endif %}
+
+      {% if not download_dir_ready %}
+        <div class="alert alert-warning">
+          Defina o <strong>diretório de downloads</strong> (caminho do host) nas
+          <a href="{{ url_for('settings.edit') }}">configurações</a> antes de baixar.
+        </div>
+      {% elif not qbt.ok %}
+        <div class="alert alert-error">
+          O qBittorrent não está acessível, então o download está bloqueado.
+        </div>
+      {% endif %}
+
+      <form method="post" action="{{ url_for('item.download', identifier=item.identifier) }}">
+        <button type="submit" class="btn btn-primary"
+                {% if not qbt.ok or not download_dir_ready %}disabled{% endif %}>
+          Adicionar ao qBittorrent
+        </button>
+      </form>
+    {% else %}
+      <p><span class="badge badge-bad">indisponível</span></p>
+      <p class="muted">{{ item.reason }}</p>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h2>Arquivos ({{ item.files|length }})</h2>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr><th>Nome</th><th>Formato</th><th class="num">Tamanho</th></tr>
+        </thead>
+        <tbody>
+          {% for f in item.files %}
+            <tr>
+              <td class="mono">{{ f.name }}</td>
+              <td>{{ f.format or "—" }}</td>
+              <td class="num">{{ f.size|human_size }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="3" class="muted">Nenhum arquivo listado.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endif %}
+{% endblock %}

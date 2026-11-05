@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('search.index') }}">🎬 {{ app_name }}</a>
+    <nav class="nav">
+      <a href="{{ url_for('search.index') }}" class="{{ 'active' if request.endpoint and (request.endpoint.startswith('search.') or request.endpoint.startswith('item.')) }}">Buscar</a>
+      <a href="{{ url_for('history.index') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('history.') }}">Histórico</a>
+      <a href="{{ url_for('settings.edit') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('settings.') }}">Configurações</a>
+    </nav>
+    {% if qbt.ok %}
+      <span class="qbt-pill ok" title="qBittorrent detectado">● qBittorrent {{ qbt.version }}</span>
+    {% else %}
+      <span class="qbt-pill bad" title="{{ qbt.error }}">● qBittorrent offline</span>
+    {% endif %}
+  </header>
+
+  {% if not qbt.ok %}
+    <div class="alert alert-error">
+      <strong>qBittorrent não detectado.</strong>
+      {{ qbt.error }}
+      Verifique se o serviço do qBittorrent está rodando no host e se a Web UI está habilitada.
+      <a href="{{ url_for('settings.edit') }}">Abrir configurações</a>
+    </div>
+  {% endif %}
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    Jelly Downloader · torrents do archive.org · uso pessoal
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</body>
+</html>

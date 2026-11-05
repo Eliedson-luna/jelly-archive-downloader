@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Configurações · {{ app_name }}{% endblock %}
+
+{% macro text_field(name, label, hint="", placeholder="", type="text") %}
+  <div class="field">
+    <label for="{{ name }}">{{ label }}</label>
+    <input id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ values[name] }}"
+           placeholder="{{ placeholder }}" autocomplete="off"
+           {% if name in env_keys %}readonly class="readonly"{% endif %}>
+    {% if name in env_keys %}
+      <p class="muted small">Definido pela variável de ambiente <code>{{ env_keys[name] }}</code>.</p>
+    {% elif hint %}
+      <p class="muted small">{{ hint }}</p>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+{% block content %}
+<h1>Configurações</h1>
+
+<form method="post" action="{{ url_for('settings.save') }}" class="settings-form">
+
+  <fieldset class="panel">
+    <legend>qBittorrent (roda no host, fora do container)</legend>
+
+    <div class="connection">
+      {% if status.ok %}
+        <span class="badge badge-ok">conectado · {{ status.version }}</span>
+      {% else %}
+        <span class="badge badge-bad">offline</span>
+        <span class="muted small">{{ status.error }}</span>
+      {% endif %}
+      <button type="button" class="btn btn-small" id="test-connection"
+              data-url="{{ url_for('settings.test_connection') }}">Testar conexão</button>
+      <span id="test-result" class="test-result"></span>
+    </div>
+
+    <p class="muted small">
+      Use as mesmas credenciais da Web UI do qBittorrent
+      (Ferramentas → Preferências → Web UI).
+    </p>
+
+    {{ text_field("qbittorrent_url", "URL do Web UI", "Ex.: http://127.0.0.1:8080", "http://127.0.0.1:8080") }}
+
+    <div class="grid-2">
+      {{ text_field("qbittorrent_user", "Usuário", "Padrão do qBittorrent: admin.", "admin") }}
+
+      <div class="field">
+        <label for="qbittorrent_password">
+          Senha
+          {% if has_password %}
+            <span class="badge badge-ok">definida</span>
+          {% else %}
+            <span class="badge badge-bad">não definida</span>
+          {% endif %}
+        </label>
+        <div class="input-row">
+          <input id="qbittorrent_password" name="qbittorrent_password" type="password"
+                 placeholder="deixe vazio para manter a atual" autocomplete="new-password"
+                 {% if "qbittorrent_password" in env_keys %}readonly class="readonly"{% endif %}>
+          <button type="button" class="btn btn-small" data-toggle-password="qbittorrent_password">mostrar</button>
+        </div>
+        {% if "qbittorrent_password" in env_keys %}
+          <p class="muted small">Definida pela variável de ambiente <code>{{ env_keys["qbittorrent_password"] }}</code>.</p>
+        {% else %}
+          <p class="muted small">Deixe vazio para manter a senha atual.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    {{ text_field("category", "Categoria no qBittorrent", "Categoria aplicada aos torrents adicionados.", "jelly") }}
+  </fieldset>
+
+  <fieldset class="panel">
+    <legend>Downloads</legend>
+
+    {{ text_field("download_dir", "Diretório de downloads (caminho do HOST)",
+        "Como o qBittorrent roda fora do container, informe o caminho real da máquina, ex.: /home/eliedson/Downloads. O container não monta esse diretório.",
+        "/home/eliedson/Downloads") }}
+
+    <div class="field checkbox">
+      <label>
+        <input type="checkbox" name="add_paused" value="1" {% if values.add_paused == "1" %}checked{% endif %}>
+        Adicionar torrents pausados
+      </label>
+    </div>
+  </fieldset>
+
+  <fieldset class="panel">
+    <legend>Busca no archive.org</legend>
+
+    {{ text_field("search_url", "URL de busca (JSON)",
+        "O marcador {query} é substituído pelo termo pesquisado e {rows} pelo limite de resultados.",
+        "") }}
+
+    <div class="grid-2">
+      {{ text_field("rows_per_page", "Resultados por página", "Máximo de 50.", "30", "number") }}
+      {{ text_field("request_timeout", "Timeout (segundos)", "Tempo máximo por requisição ao archive.org.", "15", "number") }}
+    </div>
+  </fieldset>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Salvar configurações</button>
+  </div>
+</form>
+{% endblock %}

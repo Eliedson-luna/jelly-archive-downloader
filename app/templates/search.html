@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Buscar · {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1>Encontre um filme no archive.org</h1>
+  <form class="search-form" action="{{ url_for('search.search') }}" method="get">
+    <input type="search" name="q" value="{{ query }}" placeholder="Ex.: Night of the Living Dead"
+           autofocus autocomplete="off" required>
+    <button type="submit" class="btn btn-primary">Buscar</button>
+  </form>
+  <p class="muted small">
+    A pesquisa usa o endpoint JSON do archive.org (a página de detalhes é uma SPA e não entrega HTML útil).
+  </p>
+</section>
+
+{% if error %}
+  <div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+{% if results is not none %}
+  {% if results %}
+    <div class="results-header">
+      <h2>{{ results|length }} resultado(s) para “{{ query }}”</h2>
+    </div>
+    <div class="cards">
+      {% for r in results %}
+        <article class="card">
+          <header class="card-head">
+            <h3>{{ r.title }}</h3>
+            {% if r.year %}<span class="year">{{ r.year }}</span>{% endif %}
+          </header>
+          <p class="desc">{{ r.description or "Sem descrição disponível." }}</p>
+          <footer class="card-foot">
+            <span class="badge badge-wait"
+                  data-check-url="{{ url_for('search.torrent_check', identifier=r.identifier) }}">verificando…</span>
+            <span class="muted small">{{ r.downloads }} downloads</span>
+            <a class="btn btn-small" href="{{ url_for('item.detail', identifier=r.identifier) }}">Detalhes</a>
+          </footer>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">
+      <p>Nenhum resultado para “{{ query }}”.</p>
+      <p class="muted small">Tente outro título ou ajuste a URL de busca nas configurações.</p>
+    </div>
+  {% endif %}
+{% endif %}
+{% endblock %}

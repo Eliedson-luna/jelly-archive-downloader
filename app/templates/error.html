@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}{{ code }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="empty">
+  <h1>{{ code }}</h1>
+  <p>{{ message }}</p>
+  <a class="btn btn-primary" href="{{ url_for('search.index') }}">Voltar ao início</a>
+</div>
+{% endblock %}
