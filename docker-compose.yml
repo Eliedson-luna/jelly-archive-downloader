@@ -1,0 +1,29 @@
+services:
+  jelly-downloader:
+    build:
+      context: .
+      # Em uma máquina x86 gerando imagem para o servidor arm32, descomente:
+      # platform: linux/arm/v7
+    image: jelly-downloader:latest
+    container_name: jelly-downloader
+    # Necessário para alcançar o qBittorrent que roda no host (127.0.0.1:8080).
+    network_mode: host
+    environment:
+      TZ: ${TZ:-America/Sao_Paulo}
+      PORT: ${PORT:-8088}
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      DATA_DIR: /data
+      # Credenciais do qBittorrent: por padrão vêm da página de configurações.
+      # Só preencha no .env se quiser forçar valores (o campo fica somente-leitura).
+      QBT_URL: ${QBT_URL:-}
+      QBT_USER: ${QBT_USER:-}
+      QBT_PASS: ${QBT_PASS:-}
+      DOWNLOAD_DIR: ${DOWNLOAD_DIR:-}
+      SEARCH_URL: ${SEARCH_URL:-}
+    volumes:
+      # Pasta no HOST onde ficam app.db (configurações/histórico) e o cache.
+      # Defina DATA_DIR_HOST no .env para usar outro caminho.
+      - ${DATA_DIR_HOST:-./data}:/data
+    restart: unless-stopped
+    mem_limit: 256m
