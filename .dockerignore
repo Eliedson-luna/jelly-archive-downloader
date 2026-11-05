@@ -11,3 +11,4 @@ tests
 .pytest_cache
 README.md
 AGENTS.md
+logs
